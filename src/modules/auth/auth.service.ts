@@ -5,6 +5,7 @@ import { ILoginPayload, ILogoutPayload } from './auth.interface';
 import bcrypt from 'bcryptjs';
 import { generateAccessToken, generateRefreshToken, decodeToken } from '../../utils/jwt.utils';
 import { RedisUtils } from '../../utils/redis.utils';
+import { resolveUserPermissions } from '../../utils/resolveUserPermissions';
 
 const login = async (payload: ILoginPayload) => {
   // User exists check

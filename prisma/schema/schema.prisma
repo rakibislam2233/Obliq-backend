@@ -24,7 +24,7 @@ enum UserStatus {
 // Models
 model User {
     id              String           @id @default(uuid())
-    fullName            String
+    fullName        String
     email           String           @unique
     password        String
     status          UserStatus       @default(ACTIVE)
@@ -33,6 +33,9 @@ model User {
     createdAt       DateTime         @default(now())
     updatedAt       DateTime         @updatedAt
     userPermissions UserPermission[]
+    createdById     String?
+    createdBy       User?            @relation("CreatedByUser", fields: [createdById], references: [id])
+    createdUsers    User[]           @relation("CreatedByUser")
     auditLogs       AuditLog[]
 
     @@map("users")

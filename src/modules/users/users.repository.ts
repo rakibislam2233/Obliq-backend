@@ -24,7 +24,6 @@ const userFullSelect = {
       name: true,
     },
   },
-  // Role এর default permissions
   userPermissions: {
     where: { isRevoked: false },
     select: {
