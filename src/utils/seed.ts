@@ -49,11 +49,15 @@ export async function seedDatabase() {
     { atom: 'manage:customers', description: 'Manage customers', module: 'customers' },
 
     // Permissions
+    { atom: 'view:permissions', description: 'View permissions', module: 'permissions' },
     {
       atom: 'manage:permissions',
       description: 'Grant or revoke permissions',
       module: 'permissions',
     },
+
+    // Roles
+    { atom: 'view:roles', description: 'View roles and role permissions', module: 'roles' },
 
     // Settings
     { atom: 'view:settings', description: 'View settings', module: 'settings' },
