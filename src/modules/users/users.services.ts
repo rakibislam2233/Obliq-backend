@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import bcrypt from 'bcryptjs';
 import ApiError from '../../utils/ApiError';
 import { UserRepository } from './users.repository';
-import { ICreateUserPayload, IUserFilters } from './users.interface';
+import { ICreateUserPayload, IUpdateUserPayload, IUserFilters } from './users.interface';
 import { PaginationOptions } from '../../utils/pagination.utils';
 
 // ── Create User ───────────────────────────────
@@ -48,6 +48,28 @@ const getUserById = async (id: string) => {
   }
   return user;
 };
+
+// ── Update User ───────────────────────────────
+const updateUser = async (id: string, payload: IUpdateUserPayload) => {
+  // User existence check
+  const existing = await UserRepository.isUserExists(id);
+  if (!existing) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found.');
+  }
+
+  // when email update check if the new email is already taken by another user
+  if (payload.email) {
+    const emailExists = await UserRepository.isEmailExists(payload.email);
+    if (emailExists) {
+      throw new ApiError(StatusCodes.CONFLICT, 'Email already in use.');
+    }
+  }
+
+  const updated = await UserRepository.updateUserById(id, payload);
+  return updated;
+};
+
+
 
 export const UserService = {
   createUser,

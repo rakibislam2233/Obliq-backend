@@ -7,7 +7,7 @@ import {
   PaginationResult,
   parsePaginationOptions,
 } from '../../utils/pagination.utils';
-import { ICreateUserPayload, IUserFilters } from './users.interface';
+import { ICreateUserPayload, IUpdateUserPayload, IUserFilters } from './users.interface';
 
 // ─────────────────────────────────────────────
 const userFullSelect = {
@@ -151,7 +151,7 @@ const getAllUsers = async (
 };
 
 // ── Update User by ID ──────────────────────────
-const updateUserById = async (id: string, data: Record<string, unknown>) => {
+const updateUserById = async (id: string, data: IUpdateUserPayload) => {
   return database.user.update({
     where: { id },
     data,
