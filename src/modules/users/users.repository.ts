@@ -1,5 +1,6 @@
 import { RoleType, UserStatus } from '../../../prisma/generated/enums';
 import { database } from '../../config/database.config';
+import logger from '../../utils/logger';
 import {
   createPaginationQuery,
   createPaginationResult,
@@ -59,46 +60,66 @@ const userListSelect = {
 
 // ── Create User ───────────────────────────────
 const createUser = async (userData: ICreateUserPayload) => {
-  return database.user.create({
-    data: {
-      fullName: userData.fullName,
-      email: userData.email,
-      password: userData.password,
-      roleId: userData.roleId,
-      createdById: userData.createdById,
-    },
-    select: userListSelect,
-  });
+  try {
+    return await database.user.create({
+      data: {
+        fullName: userData.fullName,
+        email: userData.email,
+        password: userData.password,
+        roleId: userData.roleId,
+        createdById: userData.createdById,
+      },
+      select: userListSelect,
+    });
+  } catch (err) {
+    logger.error('UserRepository.createUser failed:', err);
+    throw err;
+  }
 };
 
 // ── Get User by ID  -----
 const getUserById = async (id: string) => {
-  return database.user.findFirst({
-    where: { id },
-    select: {
-      ...userFullSelect,
-      password: true,
-    },
-  });
+  try {
+    return await database.user.findFirst({
+      where: { id },
+      select: {
+        ...userFullSelect,
+        password: true,
+      },
+    });
+  } catch (err) {
+    logger.error('UserRepository.getUserById failed:', err);
+    throw err;
+  }
 };
 
 // ── Get User by ID ──
 const getUserByIdPublic = async (id: string) => {
-  return database.user.findFirst({
-    where: { id },
-    select: userFullSelect,
-  });
+  try {
+    return await database.user.findFirst({
+      where: { id },
+      select: userFullSelect,
+    });
+  } catch (err) {
+    logger.error('UserRepository.getUserByIdPublic failed:', err);
+    throw err;
+  }
 };
 
 // ── Get User by Email ──────────
 const getUserByEmail = async (email: string) => {
-  return database.user.findFirst({
-    where: { email },
-    select: {
-      ...userFullSelect,
-      password: true,
-    },
-  });
+  try {
+    return await database.user.findFirst({
+      where: { email },
+      select: {
+        ...userFullSelect,
+        password: true,
+      },
+    });
+  } catch (err) {
+    logger.error('UserRepository.getUserByEmail failed:', err);
+    throw err;
+  }
 };
 
 // ── Get All Users with Filters + Pagination ───
@@ -135,74 +156,108 @@ const getAllUsers = async (
     where.createdById = filters.createdById;
   }
 
-  const [users, total] = await Promise.all([
-    database.user.findMany({
-      where,
-      select: userListSelect,
-      skip,
-      take,
-      orderBy,
-    }),
-    database.user.count({ where }),
-  ]);
-
-  return createPaginationResult(users, total, pagination);
+  try {
+    const [users, total] = await Promise.all([
+      database.user.findMany({
+        where,
+        select: userListSelect,
+        skip,
+        take,
+        orderBy,
+      }),
+      database.user.count({ where }),
+    ]);
+    return createPaginationResult(users, total, pagination);
+  } catch (err) {
+    logger.error('UserRepository.getAllUsers failed:', err);
+    throw err;
+  }
 };
 
 // ── Update User by ID ──────────────────────────
 const updateUserById = async (id: string, data: IUpdateUserPayload) => {
-  return database.user.update({
-    where: { id },
-    data,
-    select: userListSelect,
-  });
+  try {
+    return await database.user.update({
+      where: { id },
+      data,
+      select: userListSelect,
+    });
+  } catch (err) {
+    logger.error('UserRepository.updateUserById failed:', err);
+    throw err;
+  }
 };
 
 // ── Update User Status ──────────────────────────
 const updateUserStatus = async (id: string, status: UserStatus) => {
-  return database.user.update({
-    where: { id },
-    data: { status },
-    select: userListSelect,
-  });
+  try {
+    return await database.user.update({
+      where: { id },
+      data: { status },
+      select: userListSelect,
+    });
+  } catch (err) {
+    logger.error('UserRepository.updateUserStatus failed:', err);
+    throw err;
+  }
 };
 
 // ── Delete User (Hard Delete) ──────────────────
 const deleteUserById = async (id: string) => {
-  return database.user.delete({
-    where: { id },
-  });
+  try {
+    return await database.user.delete({
+      where: { id },
+    });
+  } catch (err) {
+    logger.error('UserRepository.deleteUserById failed:', err);
+    throw err;
+  }
 };
 
 // ── Email Exists Check ─────────────────────────
 const isEmailExists = async (email: string, excludeUserId?: string): Promise<boolean> => {
-  const user = await database.user.findFirst({
-    where: {
-      email,
-      ...(excludeUserId ? { id: { not: excludeUserId } } : {}),
-    },
-    select: { id: true },
-  });
-  return !!user;
+  try {
+    const user = await database.user.findFirst({
+      where: {
+        email,
+        ...(excludeUserId ? { id: { not: excludeUserId } } : {}),
+      },
+      select: { id: true },
+    });
+    return !!user;
+  } catch (err) {
+    logger.error('UserRepository.isEmailExists failed:', err);
+    throw err;
+  }
 };
 
 const getRoleById = async (id: string): Promise<{ id: string; name: RoleType } | null> => {
-  return database.role.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      name: true,
-    },
-  });
+  try {
+    return await database.role.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+  } catch (err) {
+    logger.error('UserRepository.getRoleById failed:', err);
+    throw err;
+  }
 };
 
 // ── User Exists Check ──────────────────────────
 const isUserExists = async (id: string): Promise<boolean> => {
-  const user = await database.user.findUnique({
-    where: { id },
-    select: { id: true },
-  });
-  return !!user;
+  try {
+    const user = await database.user.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    return !!user;
+  } catch (err) {
+    logger.error('UserRepository.isUserExists failed:', err);
+    throw err;
+  }
 };
 
 export const UserRepository = {
