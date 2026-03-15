@@ -4,6 +4,7 @@ import ApiError from '../../utils/ApiError';
 import { UserRepository } from './users.repository';
 import { ICreateUserPayload, IUpdateUserPayload, IUserFilters } from './users.interface';
 import { PaginationOptions } from '../../utils/pagination.utils';
+import { UserStatus } from '../../../prisma/generated/enums';
 
 // ── Create User ───────────────────────────────
 const createUser = async (payload: ICreateUserPayload, actorId: string) => {
@@ -69,9 +70,42 @@ const updateUser = async (id: string, payload: IUpdateUserPayload) => {
   return updated;
 };
 
+const updateUserStatus = async (id: string, status: UserStatus, actorId: string) => {
+  // User existence check
+  const existing = await UserRepository.isUserExists(id);
+  if (!existing) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found.');
+  }
 
+  // Self user status change check
+  if (id === actorId) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'You cannot change your own status.');
+  }
 
+  const updated = await UserRepository.updateUserStatus(id, status);
+
+  return updated;
+};
+// ── Delete User ───────────────────────────────
+const deleteUser = async (id: string, actorId: string) => {
+  // User existence check
+  const existing = await UserRepository.isUserExists(id);
+  if (!existing) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found.');
+  }
+
+  // You cannot delete your own account check
+  if (id === actorId) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'You cannot delete your own account.');
+  }
+
+  await UserRepository.deleteUserById(id);
+};
 export const UserService = {
   createUser,
+  getUserById,
   getAllUsers,
+  updateUser,
+  updateUserStatus,
+  deleteUser,
 };
