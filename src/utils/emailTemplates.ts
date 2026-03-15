@@ -1,4 +1,16 @@
-import { addEmailToQueue } from '../queues/email.queue';
+import { sendEmail } from './sendEmail';
+
+const addEmailToQueue = async (payload: {
+  to: string;
+  subject: string;
+  html: string;
+}): Promise<void> => {
+  await sendEmail({
+    to: payload.to,
+    subject: payload.subject,
+    html: payload.html,
+  });
+};
 
 const generateProfessionalEmailTemplate = (
   content: string,
