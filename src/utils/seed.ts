@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import { RoleType } from '../../prisma/generated/enums';
 import { database } from '../config/database.config';
 
-async function main() {
+export async function seedDatabase() {
   console.log('🌱 Seeding started...');
 
   // ============================================
@@ -199,11 +199,13 @@ async function main() {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 }
 
-main()
-  .catch(e => {
-    console.error('❌ Seeding failed:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await database.$disconnect();
-  });
+if (require.main === module) {
+  seedDatabase()
+    .catch(e => {
+      console.error('❌ Seeding failed:', e);
+      process.exit(1);
+    })
+    .finally(async () => {
+      await database.$disconnect();
+    });
+}
