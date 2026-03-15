@@ -63,6 +63,7 @@ const login = async (payload: ILoginPayload) => {
 const refresh = async (refreshToken: string) => {
   // Token signature + expiration validation
   const decoded = verifyRefreshToken(refreshToken);
+  // console.log('Decoded', decoded);
 
   const stored = await RedisUtils.getCache<string>(`refreshToken:${decoded.userId}`);
   if (!stored || stored !== refreshToken) {
@@ -72,7 +73,7 @@ const refresh = async (refreshToken: string) => {
   const user = await UserRepository.getUserById(decoded.userId);
   if (!user) throw new ApiError(StatusCodes.UNAUTHORIZED, 'User not found.');
 
-  // ③ Status check
+  // Status check
   if (user.status === 'SUSPENDED') {
     throw new ApiError(StatusCodes.FORBIDDEN, 'Your account has been suspended.');
   }
@@ -80,17 +81,17 @@ const refresh = async (refreshToken: string) => {
     throw new ApiError(StatusCodes.FORBIDDEN, 'Your account has been banned.');
   }
 
-  // ④ Fresh permissions resolve করো
+  // Permissions resolve
   const permissions = await resolveUserPermissions(user.id);
 
-  // ⑤ নতুন access token বানাও
+  // Generate new access token
   const newAccessToken = generateAccessToken(user.id, user.email, user.role.name, permissions);
 
   return { accessToken: newAccessToken };
 };
 
 const logout = async (payload: ILogoutPayload) => {
-  // ① Access token blacklist করো
+  // Access token Redis blacklist
   const decoded = decodeToken(payload.accessToken);
   if (decoded && decoded.exp) {
     const ttl = decoded.exp - Math.floor(Date.now() / 1000);
@@ -99,10 +100,10 @@ const logout = async (payload: ILogoutPayload) => {
     }
   }
 
-  // ② Refresh token Redis থেকে delete করো
+  // Refresh token Redis delete
   await RedisUtils.deleteCache(`refreshToken:${payload.userId}`);
 
-  // ③ Permission cache clear করো
+  // Invalidate permissions cache
   await RedisUtils.deleteCache(`permissions:${payload.userId}`);
 };
 

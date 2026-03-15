@@ -1,8 +1,20 @@
-import { redisClient } from '../config/redis.config';
 import colors from 'colors';
+import { redisClient } from '../config/redis.config';
 
 // Generic type for cached data
 type CachedData<T> = T | null;
+
+const deserializeRedisValue = <T>(value: unknown): T => {
+  if (typeof value !== 'string') {
+    return value as T;
+  }
+
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return value as T;
+  }
+};
 
 const setCache = async <T>(key: string, value: T, ttlSeconds?: number): Promise<void> => {
   try {
@@ -22,7 +34,7 @@ const getCache = async <T>(key: string): Promise<CachedData<T>> => {
   try {
     const data = await redisClient.get(key);
     if (!data) return null;
-    return JSON.parse(data) as T;
+    return deserializeRedisValue<T>(data);
   } catch (error) {
     console.error(colors.red(`❌ Redis GET error for key ${key}:`), error);
     return null;
@@ -90,7 +102,10 @@ const setCacheNX = async <T>(key: string, value: T, ttlSeconds?: number): Promis
   try {
     const serialized = JSON.stringify(value);
     if (ttlSeconds) {
-      const result = await redisClient.set(key, serialized, 'EX', ttlSeconds, 'NX');
+      const result = await redisClient.set(key, serialized, {
+        ex: ttlSeconds,
+        nx: true,
+      });
       return result === 'OK';
     } else {
       const result = await redisClient.setnx(key, serialized);
@@ -106,7 +121,10 @@ const getMultipleCache = async <T>(keys: string[]): Promise<CachedData<T>[]> => 
   try {
     if (keys.length === 0) return [];
     const values = await redisClient.mget(...keys);
-    return values.map(value => (value ? JSON.parse(value) : null));
+    return values.map(value => {
+      if (!value) return null;
+      return deserializeRedisValue<T>(value);
+    });
   } catch (error) {
     console.error(colors.red(`❌ Redis MGET error:`), error);
     return keys.map(() => null);
@@ -135,7 +153,9 @@ const getKeysByPattern = async (pattern: string): Promise<string[]> => {
 const hashOperations = {
   setHash: async <T>(key: string, field: string, value: T): Promise<void> => {
     try {
-      await redisClient.hset(key, field, JSON.stringify(value));
+      await redisClient.hset(key, {
+        [field]: JSON.stringify(value),
+      });
     } catch (error) {
       console.error(colors.red(`❌ Redis HSET error for key ${key}:`), error);
       throw error;
@@ -145,7 +165,7 @@ const hashOperations = {
     try {
       const data = await redisClient.hget(key, field);
       if (!data) return null;
-      return JSON.parse(data) as T;
+      return deserializeRedisValue<T>(data);
     } catch (error) {
       console.error(colors.red(`❌ Redis HGET error for key ${key}:`), error);
       return null;
@@ -154,9 +174,11 @@ const hashOperations = {
   getAllHash: async <T>(key: string): Promise<Record<string, T>> => {
     try {
       const data = await redisClient.hgetall(key);
+      if (!data || typeof data !== 'object') return {};
+
       const result: Record<string, T> = {};
       for (const [field, value] of Object.entries(data)) {
-        result[field] = JSON.parse(value) as T;
+        result[field] = deserializeRedisValue<T>(value);
       }
       return result;
     } catch (error) {
