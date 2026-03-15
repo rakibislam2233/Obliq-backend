@@ -130,8 +130,6 @@ export async function seedDatabase() {
     'view:assignments',
     'view:calendar',
     'view:reminders',
-    'view:messages',
-    'send:messages',
     'view:customers',
     'view:opportunities',
   ]);
