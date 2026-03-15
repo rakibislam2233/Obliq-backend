@@ -2,7 +2,8 @@ import { StatusCodes } from 'http-status-codes';
 import bcrypt from 'bcryptjs';
 import ApiError from '../../utils/ApiError';
 import { UserRepository } from './users.repository';
-import { ICreateUserPayload } from './users.interface';
+import { ICreateUserPayload, IUserFilters } from './users.interface';
+import { PaginationOptions } from '../../utils/pagination.utils';
 
 // ── Create User ───────────────────────────────
 const createUser = async (payload: ICreateUserPayload, actorId: string) => {
@@ -25,6 +26,20 @@ const createUser = async (payload: ICreateUserPayload, actorId: string) => {
   return user;
 };
 
+// ── Get All Users ─────────────────────────────
+const getAllUsers = async (
+  actorId: string,
+  actorRole: string,
+  filters: IUserFilters,
+  options: PaginationOptions
+) => {
+  // Only MANAGER can see users created by themselves
+  if (actorRole === 'MANAGER') {
+    filters.createdById = actorId;
+  }
+  return UserRepository.getAllUsers(filters, options);
+};
 export const UserService = {
   createUser,
+  getAllUsers,
 };
