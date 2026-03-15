@@ -41,3 +41,10 @@ model Role {
     name  RoleType @unique
     users User[]
 }
+
+model Permission {
+    id          String @id @default(uuid())
+    atom        String @unique // e.g. "view_reports", "edit_users"
+    description String
+    module      String
+}
