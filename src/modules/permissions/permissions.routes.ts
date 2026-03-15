@@ -21,21 +21,21 @@ router.get(
 );
 
 router.get(
-  '/users/:userId',
+  '/user/:userId',
   auth('view:permissions'),
   validateRequest(PermissionValidation.getUserPermissions),
   PermissionController.getUserPermissions
 );
 
 router.post(
-  '/grant',
+  '/user/:userId/grant',
   auth('manage:permissions'),
   validateRequest(PermissionValidation.grantPermission),
   PermissionController.grantPermission
 );
 
 router.post(
-  '/revoke',
+  '/user/:userId/revoke',
   auth('manage:permissions'),
   validateRequest(PermissionValidation.revokePermission),
   PermissionController.revokePermission

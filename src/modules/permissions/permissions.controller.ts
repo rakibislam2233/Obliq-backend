@@ -42,12 +42,17 @@ const getUserPermissions = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-// POST /api/v1/permissions/grant
+// POST /api/v1/permissions/user/:userId/grant
 const grantPermission = asyncHandler(async (req: Request, res: Response) => {
   const { userId: actorId } = req.user!;
-  const { targetUserId, permissionId } = req.body;
+  const { userId: targetUserId } = req.params;
+  const { permissionId } = req.body;
 
-  const granted = await PermissionService.grantPermission(actorId, targetUserId, permissionId);
+  const granted = await PermissionService.grantPermission(
+    actorId,
+    targetUserId as string,
+    permissionId
+  );
 
   sendResponse(res, {
     success: true,
@@ -57,12 +62,17 @@ const grantPermission = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
-// POST /api/v1/permissions/revoke
+// POST /api/v1/permissions/user/:userId/revoke
 const revokePermission = asyncHandler(async (req: Request, res: Response) => {
   const { userId: actorId } = req.user!;
-  const { targetUserId, permissionId } = req.body;
+  const { userId: targetUserId } = req.params;
+  const { permissionId } = req.body;
 
-  const revoked = await PermissionService.revokePermission(actorId, targetUserId, permissionId);
+  const revoked = await PermissionService.revokePermission(
+    actorId,
+    targetUserId as string,
+    permissionId
+  );
 
   sendResponse(res, {
     success: true,

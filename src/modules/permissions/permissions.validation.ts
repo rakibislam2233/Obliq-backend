@@ -27,20 +27,18 @@ const getUserPermissions = z.object({
 
 const grantPermission = z.object({
   body: z.object({
-    targetUserId: z.string().min(1, 'Target user id is required'),
     permissionId: z.string().min(1, 'Permission id is required'),
   }),
-  params: z.object({}).optional(),
+  params: userIdParamSchema,
   query: z.object({}).optional(),
   cookies: z.object({}).optional(),
 });
 
 const revokePermission = z.object({
   body: z.object({
-    targetUserId: z.string().min(1, 'Target user id is required'),
     permissionId: z.string().min(1, 'Permission id is required'),
   }),
-  params: z.object({}).optional(),
+  params: userIdParamSchema,
   query: z.object({}).optional(),
   cookies: z.object({}).optional(),
 });
