@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import ApiError from '../../utils/ApiError';
-import { UserRepository } from '../users/user.repository';
+import { UserRepository } from '../users/users.repository';
 import { ILoginPayload, ILogoutPayload } from './auth.interface';
 import bcrypt from 'bcryptjs';
 import { generateAccessToken, generateRefreshToken, decodeToken } from '../../utils/jwt.utils';
