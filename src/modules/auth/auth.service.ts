@@ -43,7 +43,6 @@ const failLoginAttempt = async (email: string): Promise<never> => {
 };
 
 const login = async (payload: ILoginPayload) => {
-  
   const normalizedEmail = payload.email.toLowerCase().trim();
   const isLocked = await RedisUtils.existsCache(getAuthLockKey(normalizedEmail));
   if (isLocked) {
@@ -165,8 +164,7 @@ const refresh = async (refreshToken: string) => {
 };
 
 const forgotPassword = async (email: string) => {
-  const normalizedEmail = email.toLowerCase().trim();
-  const user = await UserRepository.getUserByEmail(normalizedEmail);
+  const user = await UserRepository.getUserByEmail(email);
 
   if (!user) {
     return;
