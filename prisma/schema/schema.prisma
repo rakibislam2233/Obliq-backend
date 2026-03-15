@@ -33,6 +33,7 @@ model User {
     createdAt       DateTime         @default(now())
     updatedAt       DateTime         @updatedAt
     userPermissions UserPermission[]
+    auditLogs       AuditLog[]
 
     @@map("users")
 }
@@ -65,6 +66,7 @@ model RolePermission {
     permission   Permission @relation(fields: [permissionId], references: [id])
 
     @@unique([roleId, permissionId])
+    @@map("role_permissions")
 }
 
 model UserPermission {
@@ -78,4 +80,19 @@ model UserPermission {
     createdAt    DateTime   @default(now())
 
     @@unique([userId, permissionId])
+    @@map("user_permissions")
+
+}
+
+model AuditLog {
+    id         String   @id @default(uuid())
+    actorId    String
+    actor      User     @relation(fields: [actorId], references: [id])
+    action     String
+    targetType String
+    targetId   String
+    meta       Json?
+    createdAt  DateTime @default(now())
+
+    @@map("audit_logs")
 }
