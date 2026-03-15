@@ -1,8 +1,8 @@
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { IErrorMessage, IGenericErrorResponse } from '../shared/types/common.types';
 
 // Handles Prisma P2002 — unique constraint violation
-const handleDuplicateError = (error: Prisma.PrismaClientKnownRequestError): IGenericErrorResponse => {
+const handleDuplicateError = (error: PrismaClientKnownRequestError): IGenericErrorResponse => {
   const target = error.meta?.target as string[] | string | undefined;
   const fields = Array.isArray(target) ? target : target ? [target] : ['field'];
   const field = fields[0];

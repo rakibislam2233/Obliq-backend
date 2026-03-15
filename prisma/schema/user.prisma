@@ -1,0 +1,20 @@
+model User {
+  id              String     @id @default(cuid())
+  fullName        String
+  email           String     @unique
+  password        String
+  phoneNumber     String
+  profileImage    String?
+  bio             String?
+  studentId       String?
+  dateOfBirth     DateTime?
+  lastLogin       DateTime   @default(now())
+  role            UserRole   @default(STUDENT)
+  status          UserStatus @default(ACTIVE)
+  isEmailVerified Boolean    @default(false)
+  updatedAt       DateTime   @updatedAt
+  isDeleted       Boolean    @default(false)
+  auditLogs       AuditLog[]
+
+  @@map("users")
+}

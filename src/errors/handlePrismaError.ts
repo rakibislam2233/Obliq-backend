@@ -1,8 +1,7 @@
-import { Prisma } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client';
 import { IGenericErrorResponse } from '../shared/types/common.types';
 
-// Handles PrismaClientKnownRequestError — maps Prisma error codes to HTTP responses
-const handlePrismaError = (error: Prisma.PrismaClientKnownRequestError): IGenericErrorResponse => {
+const handlePrismaError = (error: PrismaClientKnownRequestError): IGenericErrorResponse => {
   switch (error.code) {
     case 'P2000': {
       // Value too long for column type
@@ -45,9 +44,7 @@ const handlePrismaError = (error: Prisma.PrismaClientKnownRequestError): IGeneri
       return {
         statusCode: 400,
         message: 'Related record not found',
-        errorMessages: [
-          { path: fieldName, message: 'The referenced record does not exist' },
-        ],
+        errorMessages: [{ path: fieldName, message: 'The referenced record does not exist' }],
       };
     }
 
