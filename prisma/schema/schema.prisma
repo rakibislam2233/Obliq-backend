@@ -37,14 +37,26 @@ model User {
 }
 
 model Role {
-    id    String   @id @default(uuid())
-    name  RoleType @unique
-    users User[]
+    id              String           @id @default(uuid())
+    name            RoleType         @unique
+    users           User[]
+    rolePermissions RolePermission[]
 }
 
 model Permission {
-    id          String @id @default(uuid())
-    atom        String @unique // e.g. "view_reports", "edit_users"
-    description String
-    module      String
+    id              String           @id @default(uuid())
+    atom            String           @unique
+    description     String
+    module          String
+    rolePermissions RolePermission[]
+}
+
+model RolePermission {
+    id           String     @id @default(uuid())
+    roleId       String
+    role         Role       @relation(fields: [roleId], references: [id])
+    permissionId String
+    permission   Permission @relation(fields: [permissionId], references: [id])
+
+    @@unique([roleId, permissionId])
 }
