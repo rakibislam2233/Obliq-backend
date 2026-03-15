@@ -23,7 +23,7 @@ const successTransport = new DailyRotateFile({
   maxSize: '20m',
   maxFiles: '7d',
   level: 'info',
-  format: combine(label({ label: 'easybet-backend' }), timestamp(), myFormat),
+  format: combine(label({ label: 'Obliq-Backend' }), timestamp(), myFormat),
 });
 
 // Daily Rotate File Transport for Error logs
@@ -34,18 +34,18 @@ const errorTransport = new DailyRotateFile({
   maxSize: '20m',
   maxFiles: '7d', // Automatically delete logs older than 7 days
   level: 'error',
-  format: combine(label({ label: 'Your-CR' }), timestamp(), errors({ stack: true }), myFormat),
+  format: combine(label({ label: 'Obliq-Backend' }), timestamp(), errors({ stack: true }), myFormat),
 });
 
 // Console Transport
 const consoleTransport = new winston.transports.Console({
-  format: combine(label({ label: 'Your-CR' }), timestamp(), winston.format.colorize(), myFormat),
+  format: combine(label({ label: 'Obliq-Backend' }), timestamp(), winston.format.colorize(), myFormat),
 });
 
 // General logger with file and console transports
 const logger = winston.createLogger({
   level: 'info',
-  format: combine(label({ label: 'Your-CR' }), timestamp(), myFormat),
+  format: combine(label({ label: 'Obliq-Backend' }), timestamp(), myFormat),
   transports: [successTransport, consoleTransport, errorTransport],
 });
 

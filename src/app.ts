@@ -5,11 +5,11 @@ import express, { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import path from 'path';
-import config from './src/config/index';
-import globalErrorHandler from './src/middleware/error.middleware';
-import notFound from './src/middleware/not-found.middleware';
-import { generalApiRateLimiter } from './src/middleware/rate-limit.middleware';
-import version1Routes from './src/routes/v1';
+import config from './config/index';
+import globalErrorHandler from './middleware/error.middleware';
+import notFound from './middleware/not-found.middleware';
+import { generalApiRateLimiter } from './middleware/rate-limit.middleware';
+import version1Routes from './routes/v1';
 const app = express();
 
 const getAllowedOrigins = (): string[] => {

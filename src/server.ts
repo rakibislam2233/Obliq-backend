@@ -1,11 +1,11 @@
 import colors from 'colors';
 import http from 'http';
 import app from './app';
-import config from './src/config';
-import { closeDB, connectDB } from './src/config/database.config';
-import { emailConfig } from './src/config/email.config';
-import { closeRedis, redisClient } from './src/config/redis.config';
-import logger from './src/utils/logger';
+import config from './config';
+import { closeDB, connectDB } from './config/database.config';
+import { emailConfig } from './config/email.config';
+import { closeRedis, redisClient } from './config/redis.config';
+import logger from './utils/logger';
 
 // Track if shutdown is in progress
 let isShuttingDown = false;
