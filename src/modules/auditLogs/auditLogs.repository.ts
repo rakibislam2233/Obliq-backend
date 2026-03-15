@@ -1,5 +1,6 @@
 import type { Prisma } from '../../../prisma/generated/client';
 import { database } from '../../config/database.config';
+import logger from '../../utils/logger';
 import {
   createPaginationQuery,
   createPaginationResult,
@@ -9,16 +10,20 @@ import {
 import { IAuditFilters, ICreateAuditLog } from './auditLogs.interface';
 
 // ── Create Audit Log ───────────────────────────
-const createLog = async (data: ICreateAuditLog) => {
-  return database.auditLog.create({
-    data: {
-      actorId: data.actorId,
-      action: data.action,
-      targetType: data.targetType,
-      targetId: data.targetId,
-      meta: (data.meta ?? {}) as Prisma.InputJsonValue,
-    },
-  });
+const createLog = async (data: ICreateAuditLog): Promise<void> => {
+  try {
+    await database.auditLog.create({
+      data: {
+        actorId: data.actorId,
+        action: data.action,
+        targetType: data.targetType,
+        targetId: data.targetId,
+        meta: (data.meta ?? {}) as Prisma.InputJsonValue,
+      },
+    });
+  } catch (err) {
+    logger.warn(`Audit log failed [${data.action}]:`, err);
+  }
 };
 
 // ── Get All Logs with Filters + Pagination ─────

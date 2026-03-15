@@ -3,7 +3,6 @@ import { StatusCodes } from 'http-status-codes';
 import { RoleType, UserStatus } from '../../../prisma/generated/enums';
 import ApiError from '../../utils/ApiError';
 import { PaginationOptions } from '../../utils/pagination.utils';
-import logger from '../../utils/logger';
 import { AuditLogRepository } from '../auditLogs/auditLogs.repository';
 import { ICreateUserPayload, IUpdateUserPayload, IUserFilters } from './users.interface';
 import { UserRepository } from './users.repository';
@@ -53,7 +52,7 @@ const createUser = async (payload: ICreateUserPayload, actorId: string, actorRol
       email: user.email,
       role: user.role?.name,
     },
-  }).catch((err) => logger.warn('Audit log failed [New User Created]:', err));
+  });
 
   return user;
 };
@@ -108,7 +107,7 @@ const updateUser = async (id: string, payload: IUpdateUserPayload, actorId: stri
     meta: {
       updatedFields: Object.keys(payload),
     },
-  }).catch((err) => logger.warn('Audit log failed [User Updated]:', err));
+  });
 
   return updated;
 };
@@ -131,7 +130,7 @@ const updateUserStatus = async (id: string, status: UserStatus, actorId: string)
     action: `User Status Updated To ${status}`,
     targetType: 'User',
     targetId: id,
-  }).catch((err) => logger.warn('Audit log failed [User Status Updated]:', err));
+  });
 
   return updated;
 };
@@ -155,7 +154,7 @@ const deleteUser = async (id: string, actorId: string) => {
     action: 'User Deleted',
     targetType: 'User',
     targetId: id,
-  }).catch((err) => logger.warn('Audit log failed [User Deleted]:', err));
+  });
 };
 export const UserService = {
   createUser,

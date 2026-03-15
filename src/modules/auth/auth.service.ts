@@ -9,7 +9,6 @@ import {
 } from '../../utils/jwt.utils';
 import { RedisUtils } from '../../utils/redis.utils';
 import { resolveUserPermissions } from '../../utils/resolveUserPermissions';
-import logger from '../../utils/logger';
 import { AuditLogRepository } from '../auditLogs/auditLogs.repository';
 import { UserRepository } from '../users/users.repository';
 import { ILoginPayload, ILogoutPayload } from './auth.interface';
@@ -58,7 +57,7 @@ const login = async (payload: ILoginPayload) => {
       email: user.email,
       role: user.role.name,
     },
-  }).catch((err) => logger.warn('Audit log failed [User Logged In]:', err));
+  });
 
   return {
     user: {
@@ -127,7 +126,7 @@ const logout = async (payload: ILogoutPayload) => {
     action: 'User Logged Out',
     targetType: 'User',
     targetId: payload.userId,
-  }).catch((err) => logger.warn('Audit log failed [User Logged Out]:', err));
+  });
 };
 
 export const AuthService = {
