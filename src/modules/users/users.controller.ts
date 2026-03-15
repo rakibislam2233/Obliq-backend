@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
-import { StatusCodes } from 'http-status-codes';
 import asyncHandler from 'express-async-handler';
-import { UserService } from './users.services';
-import sendResponse from '../../utils/sendResponse';
+import { StatusCodes } from 'http-status-codes';
 import pick from '../../utils/pick.utils';
+import sendResponse from '../../utils/sendResponse';
+import { UserService } from './users.services';
 
 // ── POST /api/users ────────────────────────────
 const createUser = asyncHandler(async (req: Request, res: Response) => {
-  const { userId: actorId } = req.user;
+  const { userId: actorId } = req.user!;
   const user = await UserService.createUser(req.body, actorId);
   sendResponse(res, {
     success: true,
