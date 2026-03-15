@@ -5,7 +5,7 @@ import { verifyAccessToken } from '../utils/jwt.utils';
 import { RedisUtils } from '../utils/redis.utils';
 
 const auth =
-  (requiredPermission: string) => async (req: Request, res: Response, next: NextFunction) => {
+  (requiredPermission?: string) => async (req: Request, res: Response, next: NextFunction) => {
     try {
       // Get authorization header
       const token = req.headers.authorization;
@@ -15,7 +15,7 @@ const auth =
       }
       const tokenValue = token.startsWith('Bearer ') ? token.slice(7) : token;
 
-      const isBlacklisted = await RedisUtils.existsCache(`blacklist:${token}`);
+      const isBlacklisted = await RedisUtils.existsCache(`blacklist:${tokenValue}`);
       if (isBlacklisted) {
         res.status(StatusCodes.UNAUTHORIZED).json({
           success: false,
@@ -30,7 +30,7 @@ const auth =
 
       const userPermissions = req.user?.permissions ?? [];
 
-      if (!userPermissions.includes(requiredPermission)) {
+      if (requiredPermission && !userPermissions.includes(requiredPermission)) {
         res.status(StatusCodes.FORBIDDEN).json({
           success: false,
           message: 'You do not have permission to perform this action.',

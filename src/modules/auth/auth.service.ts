@@ -1,11 +1,16 @@
+import bcrypt from 'bcryptjs';
 import { StatusCodes } from 'http-status-codes';
 import ApiError from '../../utils/ApiError';
-import { UserRepository } from '../users/users.repository';
-import { ILoginPayload, ILogoutPayload } from './auth.interface';
-import bcrypt from 'bcryptjs';
-import { generateAccessToken, generateRefreshToken, decodeToken } from '../../utils/jwt.utils';
+import {
+  decodeToken,
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from '../../utils/jwt.utils';
 import { RedisUtils } from '../../utils/redis.utils';
 import { resolveUserPermissions } from '../../utils/resolveUserPermissions';
+import { UserRepository } from '../users/users.repository';
+import { ILoginPayload, ILogoutPayload } from './auth.interface';
 
 const login = async (payload: ILoginPayload) => {
   // User exists check
@@ -56,9 +61,8 @@ const login = async (payload: ILoginPayload) => {
 };
 
 const refresh = async (refreshToken: string) => {
-  // Token validation
-  const decoded = decodeToken(refreshToken);
-  if (!decoded) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid token.');
+  // Token signature + expiration validation
+  const decoded = verifyRefreshToken(refreshToken);
 
   const stored = await RedisUtils.getCache<string>(`refreshToken:${decoded.userId}`);
   if (!stored || stored !== refreshToken) {

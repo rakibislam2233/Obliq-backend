@@ -14,6 +14,6 @@ router.post(
 	validateRequest(AuthValidation.refresh),
 	AuthController.refresh
 );
-router.post('/logout', auth('view:dashboard'), validateRequest(AuthValidation.logout), AuthController.logout);
+router.post('/logout', auth(), validateRequest(AuthValidation.logout), AuthController.logout);
 
 export const AuthRoutes = router;
