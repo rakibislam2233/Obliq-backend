@@ -1,14 +1,9 @@
 import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
-import { MulterError } from 'multer';
 import { ZodError } from 'zod';
-import handleCastError from '../errors/handleCastError';
 import handleDuplicateError from '../errors/handleDuplicateError';
-import handleMulterError from '../errors/handleMulterError';
 import handleValidationError from '../errors/handleValidationError';
 import handleZodError from '../errors/handleZodError';
-import logger from '../utils/logger';
 import ApiError from '../utils/ApiError';
-import config from '../config';
 
 const globalErrorHandler: ErrorRequestHandler = (
   error,
@@ -32,11 +27,6 @@ const globalErrorHandler: ErrorRequestHandler = (
     // Combine all mongoose validation messages into one string
     message = simplifiedError.errorMessages.map(msg => msg.message).join('. ');
     errorDetails = simplifiedError.errorMessages;
-  } else if (error?.name === 'CastError') {
-    const simplifiedError = handleCastError(error);
-    statusCode = simplifiedError.statusCode;
-    message = simplifiedError.message;
-    errorDetails = [{ path: error.path, message: error.message }];
   } else if (
     error.name === 'DuplicateError' ||
     (error.name === 'MongoServerError' && error.code === 11000)
@@ -54,19 +44,6 @@ const globalErrorHandler: ErrorRequestHandler = (
       message = error.message || 'Database error';
     }
     errorDetails = [{ path: 'database', message: error.message || 'Database error' }];
-  } else if (error instanceof MulterError) {
-    const simplifiedError = handleMulterError(error);
-    statusCode = simplifiedError.statusCode;
-    message = simplifiedError.message;
-    errorDetails = [{ path: 'file', message: simplifiedError.message }];
-  } else if (error instanceof SyntaxError && error.message.includes('JSON')) {
-    statusCode = 400;
-    message = 'Invalid JSON format';
-    errorDetails = [{ path: 'request_body', message: error.message }];
-  } else if (error.name === 'MongoNetworkError' || error.message?.includes('ECONNREFUSED')) {
-    statusCode = 503;
-    message = 'Database connection failed';
-    errorDetails = [{ path: 'database', message: error.message }];
   } else if (error.message?.includes('timeout') || error.name === 'TimeoutError') {
     statusCode = 504;
     message = 'Request timed out';
