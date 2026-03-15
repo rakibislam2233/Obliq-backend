@@ -23,6 +23,38 @@ const createUser = async (userData: ICreateUserPayload): Promise<IUser> => {
   return result;
 };
 
+const getUserById = async (id: string) => {
+  return database.user.findFirst({
+    where: { id },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      password: true,
+      status: true,
+      role: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      createdAt: true,
+    },
+  });
+};
+
+
+// ── Get User by Email ──────────────────────────────────────────────────────────
+const getUserByEmail = async (email: string) => {
+  return database.user.findFirst({ where: { email } });
+};
+
+// ── Update User by ID ──────────────────────────────────────────────────────────
+const updateUserById = async (id: string, data: Record<string, unknown>) => {
+  return database.user.update({ where: { id }, data });
+};
 export const UserRepository = {
   createUser,
+  getUserByEmail,
+  updateUserById,
 };
