@@ -10,5 +10,7 @@ export interface ILoginPayload {
   password: string;
 }
 
-
-export 
+export interface ILogoutPayload {
+  userId: string;
+  accessToken: string;
+}
