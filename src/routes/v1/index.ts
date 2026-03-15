@@ -4,6 +4,8 @@ import { RoleRoutes } from '../../modules/roles/roles.routes';
 import { UserRoutes } from '../../modules/users/users.routes';
 import { AuditRoutes } from '../../modules/auditLogs/auditLogs.routes';
 import { PermissionRoutes } from '../../modules/permissions/permissions.routes';
+import { LeadRoutes } from '../../modules/leads/leads.routes';
+import { TaskRoutes } from '../../modules/tasks/tasks.routes';
 const router = Router();
 
 // Module routes
@@ -27,6 +29,14 @@ const moduleRoutes = [
   {
     path: '/permissions',
     route: PermissionRoutes,
+  },
+  {
+    path: '/leads',
+    route: LeadRoutes,
+  },
+  {
+    path: '/tasks',
+    route: TaskRoutes,
   },
 ];
 
