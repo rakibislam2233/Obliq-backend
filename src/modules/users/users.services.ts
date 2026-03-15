@@ -39,6 +39,16 @@ const getAllUsers = async (
   }
   return UserRepository.getAllUsers(filters, options);
 };
+
+// ── Get Single User ───────────────────────────
+const getUserById = async (id: string) => {
+  const user = await UserRepository.getUserByIdPublic(id);
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'User not found.');
+  }
+  return user;
+};
+
 export const UserService = {
   createUser,
   getAllUsers,
