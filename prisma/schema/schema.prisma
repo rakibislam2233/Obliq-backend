@@ -42,6 +42,8 @@ model Role {
     name            RoleType         @unique
     users           User[]
     rolePermissions RolePermission[]
+
+    @@map("roles")
 }
 
 model Permission {
@@ -51,6 +53,8 @@ model Permission {
     module          String
     rolePermissions RolePermission[]
     userPermissions UserPermission[]
+
+    @@map("permissions")
 }
 
 model RolePermission {
@@ -69,7 +73,7 @@ model UserPermission {
     user         User       @relation(fields: [userId], references: [id])
     permissionId String
     permission   Permission @relation(fields: [permissionId], references: [id])
-    grantedById  String 
+    grantedById  String
     isRevoked    Boolean    @default(false)
     createdAt    DateTime   @default(now())
 
