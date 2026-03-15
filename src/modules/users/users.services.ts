@@ -3,6 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 import { RoleType, UserStatus } from '../../../prisma/generated/enums';
 import ApiError from '../../utils/ApiError';
 import { PaginationOptions } from '../../utils/pagination.utils';
+import logger from '../../utils/logger';
+import { AuditLogRepository } from '../auditLogs/auditLogs.repository';
 import { ICreateUserPayload, IUpdateUserPayload, IUserFilters } from './users.interface';
 import { UserRepository } from './users.repository';
 
@@ -40,6 +42,19 @@ const createUser = async (payload: ICreateUserPayload, actorId: string, actorRol
     createdById: actorId,
   });
 
+  // Audit log — New User Created
+  await AuditLogRepository.createLog({
+    actorId,
+    action: 'New User Created',
+    targetType: 'User',
+    targetId: user.id,
+    meta: {
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role?.name,
+    },
+  }).catch((err) => logger.warn('Audit log failed [New User Created]:', err));
+
   return user;
 };
 
@@ -67,7 +82,7 @@ const getUserById = async (id: string) => {
 };
 
 // ── Update User ───────────────────────────────
-const updateUser = async (id: string, payload: IUpdateUserPayload) => {
+const updateUser = async (id: string, payload: IUpdateUserPayload, actorId: string) => {
   // User existence check
   const existing = await UserRepository.isUserExists(id);
   if (!existing) {
@@ -83,6 +98,18 @@ const updateUser = async (id: string, payload: IUpdateUserPayload) => {
   }
 
   const updated = await UserRepository.updateUserById(id, payload);
+
+  // Audit log — User Updated
+  await AuditLogRepository.createLog({
+    actorId,
+    action: 'User Updated',
+    targetType: 'User',
+    targetId: id,
+    meta: {
+      updatedFields: Object.keys(payload),
+    },
+  }).catch((err) => logger.warn('Audit log failed [User Updated]:', err));
+
   return updated;
 };
 
@@ -97,8 +124,14 @@ const updateUserStatus = async (id: string, status: UserStatus, actorId: string)
   if (id === actorId) {
     throw new ApiError(StatusCodes.BAD_REQUEST, 'You cannot change your own status.');
   }
-
   const updated = await UserRepository.updateUserStatus(id, status);
+  // Audit log — User Status Updated
+  await AuditLogRepository.createLog({
+    actorId,
+    action: `User Status Updated To ${status}`,
+    targetType: 'User',
+    targetId: id,
+  }).catch((err) => logger.warn('Audit log failed [User Status Updated]:', err));
 
   return updated;
 };
@@ -116,6 +149,13 @@ const deleteUser = async (id: string, actorId: string) => {
   }
 
   await UserRepository.deleteUserById(id);
+  // Audit log — User Deleted
+  await AuditLogRepository.createLog({
+    actorId,
+    action: 'User Deleted',
+    targetType: 'User',
+    targetId: id,
+  }).catch((err) => logger.warn('Audit log failed [User Deleted]:', err));
 };
 export const UserService = {
   createUser,

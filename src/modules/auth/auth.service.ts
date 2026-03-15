@@ -9,6 +9,8 @@ import {
 } from '../../utils/jwt.utils';
 import { RedisUtils } from '../../utils/redis.utils';
 import { resolveUserPermissions } from '../../utils/resolveUserPermissions';
+import logger from '../../utils/logger';
+import { AuditLogRepository } from '../auditLogs/auditLogs.repository';
 import { UserRepository } from '../users/users.repository';
 import { ILoginPayload, ILogoutPayload } from './auth.interface';
 
@@ -44,6 +46,19 @@ const login = async (payload: ILoginPayload) => {
     refreshToken,
     7 * 24 * 60 * 60 //7 days in seconds
   );
+
+  // Audit log — User Logged In
+  await AuditLogRepository.createLog({
+    actorId: user.id,
+    action: 'User Logged In',
+    targetType: 'User',
+    targetId: user.id,
+    meta: {
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role.name,
+    },
+  }).catch((err) => logger.warn('Audit log failed [User Logged In]:', err));
 
   return {
     user: {
@@ -105,6 +120,14 @@ const logout = async (payload: ILogoutPayload) => {
 
   // Invalidate permissions cache
   await RedisUtils.deleteCache(`permissions:${payload.userId}`);
+
+  // Audit log — User Logged Out
+  await AuditLogRepository.createLog({
+    actorId: payload.userId,
+    action: 'User Logged Out',
+    targetType: 'User',
+    targetId: payload.userId,
+  }).catch((err) => logger.warn('Audit log failed [User Logged Out]:', err));
 };
 
 export const AuthService = {

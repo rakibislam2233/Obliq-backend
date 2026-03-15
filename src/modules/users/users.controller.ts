@@ -59,7 +59,7 @@ const getUserById = asyncHandler(async (req: Request, res: Response) => {
 const updateUser = asyncHandler(async (req: Request, res: Response) => {
   const { id: userId } = req.params;
   const { userId: actorId } = req.user!;
-  const user = await UserService.updateUser(userId as string, req.body);
+  const user = await UserService.updateUser(userId as string, req.body, actorId);
 
   sendResponse(res, {
     success: true,
