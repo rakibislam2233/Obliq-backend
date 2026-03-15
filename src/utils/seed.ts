@@ -8,30 +8,6 @@ export async function seedDatabase() {
   // ============================================
   // STEP 1 —Create Roles
   // ============================================
-  console.log('📌 Creating roles...');
-
-  const roles = await Promise.all(
-    Object.values(RoleType).map(name =>
-      database.role.upsert({
-        where: { name },
-        update: {},
-        create: { name },
-      })
-    )
-  );
-
-  const adminRole = roles.find(r => r.name === RoleType.ADMIN)!;
-  const managerRole = roles.find(r => r.name === RoleType.MANAGER)!;
-  const agentRole = roles.find(r => r.name === RoleType.AGENT)!;
-  const customerRole = roles.find(r => r.name === RoleType.CUSTOMER)!;
-
-  console.log('✅ Roles created');
-
-  // ============================================
-  // STEP 2 —Create Permission Atoms
-  // ============================================
-  console.log('📌 Creating permissions...');
-
   const permissionData = [
     // Dashboard
     { atom: 'view:dashboard', description: 'View dashboard', module: 'dashboard' },
@@ -63,13 +39,9 @@ export async function seedDatabase() {
 
     // Reports
     { atom: 'view:reports', description: 'View reports', module: 'reports' },
-    { atom: 'export:reports', description: 'Export/download reports', module: 'reports' },
+    { atom: 'export:reports', description: 'Export reports', module: 'reports' },
 
-    // Messages
-    { atom: 'view:messages', description: 'View messages', module: 'messages' },
-    { atom: 'send:messages', description: 'Send messages', module: 'messages' },
-
-    // Audit Log
+    // Audit
     { atom: 'view:audit', description: 'View audit logs', module: 'audit' },
 
     // Customers
@@ -83,18 +55,33 @@ export async function seedDatabase() {
       module: 'permissions',
     },
 
-    // Configuration
-    { atom: 'view:configuration', description: 'View configuration', module: 'configuration' },
-    { atom: 'manage:configuration', description: 'Manage configuration', module: 'configuration' },
-
-    // Invoice
-    { atom: 'view:invoice', description: 'View invoices', module: 'invoice' },
-    { atom: 'manage:invoice', description: 'Manage invoices', module: 'invoice' },
-
     // Settings
     { atom: 'view:settings', description: 'View settings', module: 'settings' },
     { atom: 'manage:settings', description: 'Manage settings', module: 'settings' },
   ];
+  console.log('📌 Creating roles...');
+
+  const roles = await Promise.all(
+    Object.values(RoleType).map(name =>
+      database.role.upsert({
+        where: { name },
+        update: {},
+        create: { name },
+      })
+    )
+  );
+
+  const adminRole = roles.find(r => r.name === RoleType.ADMIN)!;
+  const managerRole = roles.find(r => r.name === RoleType.MANAGER)!;
+  const agentRole = roles.find(r => r.name === RoleType.AGENT)!;
+  const customerRole = roles.find(r => r.name === RoleType.CUSTOMER)!;
+
+  console.log('✅ Roles created');
+
+  // ============================================
+  // STEP 2 —Create Permission Atoms
+  // ============================================
+  console.log('📌 Creating permissions...');
 
   const permissions = await Promise.all(
     permissionData.map(p =>

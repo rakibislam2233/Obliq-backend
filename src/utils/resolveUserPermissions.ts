@@ -1,9 +1,11 @@
 import { database } from '../config/database.config';
 import { RedisUtils } from './redis.utils';
 export const resolveUserPermissions = async (userId: string): Promise<string[]> => {
+  // Check cache first
   const cached = await RedisUtils.getCache<string[]>(`permissions:${userId}`);
   if (cached) return cached;
 
+  // If not in cache, fetch from database
   const user = await database.user.findUnique({
     where: { id: userId },
     include: {
@@ -26,6 +28,7 @@ export const resolveUserPermissions = async (userId: string): Promise<string[]> 
 
   if (!user) return [];
 
+  // Calculate effective permissions
   const rolePermissions = user.role.rolePermissions.map(rp => rp.permission.atom);
   const grantedPermissions = user.userPermissions
     .filter(up => !up.isRevoked)

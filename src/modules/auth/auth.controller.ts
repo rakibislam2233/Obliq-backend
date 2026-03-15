@@ -29,21 +29,20 @@ const login = asyncHandler(async (req: Request, res: Response) => {
     success: true,
     statusCode: StatusCodes.OK,
     message: 'Login successful.',
-    data: {
-      user: result.user,
-      accessToken: result.tokens.accessToken,
-    },
+    data: result,
   });
 });
 
 // POST /api/v1/auth/refresh
 const refresh = asyncHandler(async (req: Request, res: Response) => {
-  const refreshToken = (req.cookies?.[REFRESH_COOKIE_NAME] as string) || (req.body?.refreshToken as string);
+  const refreshToken =
+    (req.cookies?.[REFRESH_COOKIE_NAME] as string) || (req.body?.refreshToken as string);
 
   if (!refreshToken) {
     throw new ApiError(StatusCodes.UNAUTHORIZED, 'Refresh token is missing.');
   }
 
+  // console.log('Refresh Token', refreshToken);
   const result = await AuthService.refresh(refreshToken);
 
   sendResponse(res, {

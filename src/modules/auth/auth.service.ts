@@ -38,7 +38,7 @@ const login = async (payload: ILoginPayload) => {
     generateRefreshToken(user.id, user.email, user.role.name),
   ]);
 
-  // ⑥Refresh token Redis
+  // Refresh token Redis store
   await RedisUtils.setCache(
     `refreshToken:${user.id}`,
     refreshToken,
