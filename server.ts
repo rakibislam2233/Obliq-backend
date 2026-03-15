@@ -1,11 +1,11 @@
 import colors from 'colors';
 import http from 'http';
 import app from './app';
-import config from './config';
-import { closeDB, connectDB } from './config/database.config';
-import { emailConfig } from './config/email.config';
-import { closeRedis, redisClient } from './config/redis.config';
-import logger from './utils/logger';
+import config from './src/config';
+import { closeDB, connectDB } from './src/config/database.config';
+import { emailConfig } from './src/config/email.config';
+import { closeRedis, redisClient } from './src/config/redis.config';
+import logger from './src/utils/logger';
 
 // Track if shutdown is in progress
 let isShuttingDown = false;
@@ -148,18 +148,9 @@ const gracefulShutdown = async (signal: string): Promise<void> => {
     // Step 1: Stop health monitoring
     stopHealthMonitoring();
 
-    // Step 2: Close HTTP Server & Socket.IO
-    if (io) {
-      if (!isDevelopmentRestart) {
-        logger.info(colors.cyan('🔌 [2.1/5] Closing Socket.IO server...'));
-      }
-      io.close();
-      io = null;
-    }
-
     if (server) {
       if (!isDevelopmentRestart) {
-        logger.info(colors.cyan('🌐 [2.2/5] Closing HTTP server...'));
+        logger.info(colors.cyan('🌐 [2/5] Closing HTTP server...'));
       }
 
       // Force destroy all connections FIRST to unblock server.close()
@@ -298,22 +289,10 @@ async function main() {
     logger.info(colors.cyan('\n📦 [1/5] Connecting to Database...'));
     await connectDB();
 
-    // Seed default data (Admin & Super Admin)
-    await seedDatabase();
-
     // Step 2: Connect to Redis
     logger.info(colors.cyan('📦 [2/5] Connecting to Redis...'));
-    await new Promise(resolve => {
-      if (redisClient.status === 'ready') {
-        logger.info(colors.green('   ✅ Redis already connected'));
-        resolve(true);
-      } else {
-        redisClient.once('ready', () => {
-          logger.info(colors.green('   ✅ Redis connected successfully'));
-          resolve(true);
-        });
-      }
-    });
+    await redisClient.ping();
+    logger.info(colors.green('   ✅ Redis connected successfully'));
 
     // Step 3: Verify Email Service (optional)
     if (config.email.username && config.email.password) {
@@ -326,19 +305,6 @@ async function main() {
     // Step 4: Start HTTP server (NOW ASYNC)
     logger.info(colors.cyan('🌐 [4/5] Starting HTTP server...\n'));
     await startServer();
-
-    // Attach Socket.IO
-    if (server) {
-      io = new SocketIOServer(server, socketConfig);
-      setSocketInstance(io);
-      setupSocket(io);
-      logger.info(colors.green('✅ Socket.IO initialized'));
-    }
-
-    // Reschedule class status updates for existing classes
-    logger.info(colors.cyan('\n🔄 Rescheduling class status updates...'));
-    const { rescheduleAllClassStatusUpdates } = await import('./utils/classStatusScheduler.utils');
-    await rescheduleAllClassStatusUpdates();
 
     // Step 5: Start health monitoring (development only)
     if (config.env === 'development') {
