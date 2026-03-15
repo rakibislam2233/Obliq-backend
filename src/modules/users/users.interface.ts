@@ -1,12 +1,5 @@
 import { UserStatus } from '../../../prisma/generated/enums';
 
-export interface ICreateUserPayload {
-  fullName: string;
-  email: string;
-  password: string;
-  roleId: string;
-}
-
 export interface IUser {
   id: string;
   fullName: string;
@@ -15,4 +8,26 @@ export interface IUser {
   status: UserStatus;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface ICreateUserPayload {
+  fullName: string;
+  email: string;
+  password: string;
+  roleId: string;
+  createdById?: string;
+}
+
+export interface IUpdateUserPayload {
+  fullName?: string;
+  email?: string;
+}
+
+export interface IUserFilters {
+  fullName?: string;
+  email?: string;
+  status?: UserStatus;
+  search?: string;
+  roleId?: string;
+  createdById?: string;
 }

@@ -7,64 +7,112 @@ import {
   PaginationResult,
   parsePaginationOptions,
 } from '../../utils/pagination.utils';
-import { ICreateUserPayload, IUser } from './users.interface';
+import { ICreateUserPayload, IUserFilters } from './users.interface';
 
-// --Create User
-const createUser = async (userData: ICreateUserPayload): Promise<IUser> => {
-  const user = await database.user.create({
+// ─────────────────────────────────────────────
+const userFullSelect = {
+  id: true,
+  fullName: true,
+  email: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
+  createdById: true,
+  role: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  // Role এর default permissions
+  userPermissions: {
+    where: { isRevoked: false },
+    select: {
+      id: true,
+      isRevoked: true,
+      permission: {
+        select: {
+          id: true,
+          atom: true,
+          description: true,
+          module: true,
+        },
+      },
+    },
+  },
+};
+
+// ─────────────────────────────────────────────
+const userListSelect = {
+  id: true,
+  fullName: true,
+  email: true,
+  status: true,
+  createdAt: true,
+  createdById: true,
+  role: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+};
+
+// ── Create User ───────────────────────────────
+const createUser = async (userData: ICreateUserPayload) => {
+  return database.user.create({
     data: {
       fullName: userData.fullName,
       email: userData.email,
       password: userData.password,
       roleId: userData.roleId,
+      createdById: userData.createdById,
     },
+    select: userListSelect,
   });
-  const result = {
-    id: user.id,
-    fullName: user.fullName,
-    email: user.email,
-    roleId: user.roleId,
-    status: user.status,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-  };
-  return result;
 };
 
-// ── Get User by ID ───────────────────────────────────────────────────────────
+// ── Get User by ID  -----
 const getUserById = async (id: string) => {
   return database.user.findFirst({
     where: { id },
     select: {
-      id: true,
-      fullName: true,
-      email: true,
+      ...userFullSelect,
       password: true,
-      status: true,
-      role: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
-      createdAt: true,
     },
   });
 };
 
-// ── Get All Users with Filters and Pagination ─────────────────────────────────
+// ── Get User by ID ──
+const getUserByIdPublic = async (id: string) => {
+  return database.user.findFirst({
+    where: { id },
+    select: userFullSelect,
+  });
+};
+
+// ── Get User by Email ──────────
+const getUserByEmail = async (email: string) => {
+  return database.user.findFirst({
+    where: { email },
+    select: {
+      ...userFullSelect,
+      password: true,
+    },
+  });
+};
+
+// ── Get All Users with Filters + Pagination ───
 const getAllUsers = async (
-  filters: any,
+  filters: IUserFilters,
   options: PaginationOptions
 ): Promise<PaginationResult<any>> => {
   const pagination = parsePaginationOptions(options);
   const { skip, take, orderBy } = createPaginationQuery(pagination);
 
-  const where: any = { isDeleted: false };
+  const where: any = {};
 
-  if (filters.fullName) where.fullName = { contains: filters.fullName, mode: 'insensitive' };
-  if (filters.email) where.email = { contains: filters.email, mode: 'insensitive' };
-  if (filters.status) where.status = filters.status;
+  // Search filter
   if (filters.search) {
     where.OR = [
       { fullName: { contains: filters.search, mode: 'insensitive' } },
@@ -72,19 +120,26 @@ const getAllUsers = async (
     ];
   }
 
+  if (filters.fullName) {
+    where.fullName = { contains: filters.fullName, mode: 'insensitive' };
+  }
+  if (filters.email) {
+    where.email = { contains: filters.email, mode: 'insensitive' };
+  }
+  if (filters.status) {
+    where.status = filters.status;
+  }
+  if (filters.roleId) {
+    where.roleId = filters.roleId;
+  }
+  if (filters.createdById) {
+    where.createdById = filters.createdById;
+  }
+
   const [users, total] = await Promise.all([
     database.user.findMany({
       where,
-      select: {
-        id: true,
-        fullName: true,
-        email: true,
-        status: true,
-        role: {
-          select: { id: true, name: true },
-        },
-        createdAt: true,
-      },
+      select: userListSelect,
       skip,
       take,
       orderBy,
@@ -95,34 +150,58 @@ const getAllUsers = async (
   return createPaginationResult(users, total, pagination);
 };
 
-// ── Get User by Email ──────────────────────────────────────────────────────────
-const getUserByEmail = async (email: string) => {
-  return database.user.findFirst({ where: { email } });
-};
-
-// ── Update User by ID ──────────────────────────────────────────────────────────
+// ── Update User by ID ──────────────────────────
 const updateUserById = async (id: string, data: Record<string, unknown>) => {
-  return database.user.update({ where: { id }, data });
-};
-// ── Delete User (Soft Delete) ──────────────────────────────────────────────────
-const deleteUserById = async (id: string) => {
   return database.user.update({
     where: { id },
-    data: { status: UserStatus.SUSPENDED },
+    data,
+    select: userListSelect,
   });
 };
 
-// ── Email Helpers ──────────────────────────────────────────────────────────────
-const isEmailExists = async (email: string) => {
-  const user = await database.user.findUnique({ where: { email }, select: { id: true } });
+// ── Update User Status ──────────────────────────
+const updateUserStatus = async (id: string, status: UserStatus) => {
+  return database.user.update({
+    where: { id },
+    data: { status },
+    select: userListSelect,
+  });
+};
+
+// ── Delete User (Hard Delete) ──────────────────
+const deleteUserById = async (id: string) => {
+  return database.user.delete({
+    where: { id },
+  });
+};
+
+// ── Email Exists Check ─────────────────────────
+const isEmailExists = async (email: string): Promise<boolean> => {
+  const user = await database.user.findUnique({
+    where: { email },
+    select: { id: true },
+  });
   return !!user;
 };
+
+// ── User Exists Check ──────────────────────────
+const isUserExists = async (id: string): Promise<boolean> => {
+  const user = await database.user.findUnique({
+    where: { id },
+    select: { id: true },
+  });
+  return !!user;
+};
+
 export const UserRepository = {
   createUser,
-  getUserByEmail,
   getUserById,
+  getUserByIdPublic,
+  getUserByEmail,
   getAllUsers,
   updateUserById,
+  updateUserStatus,
   deleteUserById,
   isEmailExists,
+  isUserExists,
 };
