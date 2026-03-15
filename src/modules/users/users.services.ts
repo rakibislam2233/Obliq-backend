@@ -1,17 +1,33 @@
-import { StatusCodes } from 'http-status-codes';
 import bcrypt from 'bcryptjs';
+import { StatusCodes } from 'http-status-codes';
+import { RoleType, UserStatus } from '../../../prisma/generated/enums';
 import ApiError from '../../utils/ApiError';
-import { UserRepository } from './users.repository';
-import { ICreateUserPayload, IUpdateUserPayload, IUserFilters } from './users.interface';
 import { PaginationOptions } from '../../utils/pagination.utils';
-import { UserStatus } from '../../../prisma/generated/enums';
+import { ICreateUserPayload, IUpdateUserPayload, IUserFilters } from './users.interface';
+import { UserRepository } from './users.repository';
 
 // ── Create User ───────────────────────────────
-const createUser = async (payload: ICreateUserPayload, actorId: string) => {
+const createUser = async (payload: ICreateUserPayload, actorId: string, actorRole: string) => {
   // check email already exists
   const emailExists = await UserRepository.isEmailExists(payload.email);
   if (emailExists) {
     throw new ApiError(StatusCodes.CONFLICT, 'Email already in use.');
+  }
+
+  const targetRole = await UserRepository.getRoleById(payload.roleId);
+  if (!targetRole) {
+    throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid role id.');
+  }
+
+  // Grant ceiling: manager can create only agent/customer users
+  if (actorRole === RoleType.MANAGER) {
+    const allowedManagerTargets: RoleType[] = [RoleType.AGENT, RoleType.CUSTOMER];
+    if (!allowedManagerTargets.includes(targetRole.name)) {
+      throw new ApiError(
+        StatusCodes.FORBIDDEN,
+        'Managers can only create Agent or Customer users.'
+      );
+    }
   }
 
   // Hash password
@@ -60,7 +76,7 @@ const updateUser = async (id: string, payload: IUpdateUserPayload) => {
 
   // when email update check if the new email is already taken by another user
   if (payload.email) {
-    const emailExists = await UserRepository.isEmailExists(payload.email);
+    const emailExists = await UserRepository.isEmailExists(payload.email, id);
     if (emailExists) {
       throw new ApiError(StatusCodes.CONFLICT, 'Email already in use.');
     }

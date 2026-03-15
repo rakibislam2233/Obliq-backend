@@ -1,4 +1,4 @@
-import { UserStatus } from '../../../prisma/generated/enums';
+import { RoleType, UserStatus } from '../../../prisma/generated/enums';
 import { database } from '../../config/database.config';
 import {
   createPaginationQuery,
@@ -175,12 +175,25 @@ const deleteUserById = async (id: string) => {
 };
 
 // ── Email Exists Check ─────────────────────────
-const isEmailExists = async (email: string): Promise<boolean> => {
-  const user = await database.user.findUnique({
-    where: { email },
+const isEmailExists = async (email: string, excludeUserId?: string): Promise<boolean> => {
+  const user = await database.user.findFirst({
+    where: {
+      email,
+      ...(excludeUserId ? { id: { not: excludeUserId } } : {}),
+    },
     select: { id: true },
   });
   return !!user;
+};
+
+const getRoleById = async (id: string): Promise<{ id: string; name: RoleType } | null> => {
+  return database.role.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
 };
 
 // ── User Exists Check ──────────────────────────
@@ -203,4 +216,5 @@ export const UserRepository = {
   deleteUserById,
   isEmailExists,
   isUserExists,
+  getRoleById,
 };

@@ -36,6 +36,7 @@ model User {
     createdById     String?
     createdBy       User?            @relation("CreatedByUser", fields: [createdById], references: [id])
     createdUsers    User[]           @relation("CreatedByUser")
+    grantedPermissions UserPermission[] @relation("GrantedByUser")
     auditLogs       AuditLog[]
 
     @@map("users")
@@ -79,6 +80,7 @@ model UserPermission {
     permissionId String
     permission   Permission @relation(fields: [permissionId], references: [id])
     grantedById  String
+    grantedBy    User       @relation("GrantedByUser", fields: [grantedById], references: [id])
     isRevoked    Boolean    @default(false)
     createdAt    DateTime   @default(now())
 

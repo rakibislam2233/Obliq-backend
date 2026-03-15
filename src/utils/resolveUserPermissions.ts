@@ -37,7 +37,7 @@ export const resolveUserPermissions = async (userId: string): Promise<string[]> 
   const allPermissions = [...new Set([...rolePermissions, ...grantedPermissions])].filter(
     atom => !revokedPermissions.includes(atom)
   );
-  await RedisUtils.setCache(`permissions:${userId}`, allPermissions, 60 * 60); // 1 hour cache
+  await RedisUtils.setCache(`permissions:${userId}`, allPermissions, 60 * 5); // 5 minutes cache
 
   return allPermissions;
 };

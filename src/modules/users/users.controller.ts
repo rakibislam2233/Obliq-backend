@@ -8,7 +8,8 @@ import { UserService } from './users.services';
 // ── POST /api/users ────────────────────────────
 const createUser = asyncHandler(async (req: Request, res: Response) => {
   const { userId: actorId } = req.user!;
-  const user = await UserService.createUser(req.body, actorId);
+  const { role: actorRole } = req.user!;
+  const user = await UserService.createUser(req.body, actorId, actorRole);
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.CREATED,
