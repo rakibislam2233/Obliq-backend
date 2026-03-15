@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { IDecodedToken } from '../shared/interfaces/jwt.interface';
 import ApiError from '../utils/ApiError';
 import { verifyAccessToken } from '../utils/jwt.utils';
 import { RedisUtils } from '../utils/redis.utils';
+import { IDecodedToken } from '../shared/interfaces/jwt.interface';
 
 const AUTH_CACHE_KEY = {
   BLACKlISTED_TOKEN: (token: string) => `blacklisted_token:${token}`,
