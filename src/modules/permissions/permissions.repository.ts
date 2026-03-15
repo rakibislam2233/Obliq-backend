@@ -24,6 +24,24 @@ const getPermissionById = async (permissionId: string) => {
   });
 };
 
+const createPermission = async (payload: { atom: string; description: string; module: string }) => {
+  return database.permission.create({
+    data: {
+      atom: payload.atom,
+      description: payload.description,
+      module: payload.module,
+    },
+    select: permissionSelect,
+  });
+};
+
+const deletePermission = async (permissionId: string) => {
+  return database.permission.delete({
+    where: { id: permissionId },
+    select: permissionSelect,
+  });
+};
+
 const findUserPermission = async (userId: string, permissionId: string) => {
   // Check user-permission relation
   return database.userPermission.findUnique({
@@ -151,6 +169,8 @@ const invalidatePermissionCache = async (userId: string): Promise<void> => {
 export const PermissionRepository = {
   getAllPermissions,
   getPermissionById,
+  createPermission,
+  deletePermission,
   findUserPermission,
   grantPermission,
   revokePermission,

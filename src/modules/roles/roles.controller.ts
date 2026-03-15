@@ -29,7 +29,24 @@ const getRolePermissions = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// PATCH /api/v1/roles/:id/permissions
+const updateRolePermissions = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { permissionIds } = req.body;
+  const { userId: actorId } = req.user!;
+
+  const role = await RoleService.updateRolePermissions(id as string, permissionIds, actorId);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Role permissions updated successfully.',
+    data: role,
+  });
+});
+
 export const RoleController = {
   getAllRoles,
   getRolePermissions,
+  updateRolePermissions,
 };

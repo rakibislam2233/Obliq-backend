@@ -18,7 +18,17 @@ const getRolePermissions = z.object({
   cookies: z.object({}).optional(),
 });
 
+const updateRolePermissions = z.object({
+  body: z.object({
+    permissionIds: z.array(z.string().min(1, 'Permission id is required')),
+  }),
+  params: idParamSchema,
+  query: z.object({}).optional(),
+  cookies: z.object({}).optional(),
+});
+
 export const RoleValidation = {
   getAllRoles,
   getRolePermissions,
+  updateRolePermissions,
 };

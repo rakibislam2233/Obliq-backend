@@ -20,4 +20,11 @@ router.get(
   RoleController.getRolePermissions
 );
 
+router.patch(
+  '/:id/permissions',
+  auth('manage:permissions'),
+  validateRequest(RoleValidation.updateRolePermissions),
+  RoleController.updateRolePermissions
+);
+
 export const RoleRoutes = router;

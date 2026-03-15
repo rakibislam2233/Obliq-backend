@@ -92,10 +92,54 @@ const revokePermission = async (actorId: string, targetUserId: string, permissio
   return revoked;
 };
 
+const createPermission = async (
+  actorId: string,
+  payload: { atom: string; description: string; module: string }
+) => {
+  const permission = await PermissionRepository.createPermission(payload);
+
+  await AuditLogRepository.createLog({
+    actorId,
+    action: 'Permission Created',
+    targetType: 'Permission',
+    targetId: permission.id,
+    meta: {
+      atom: permission.atom,
+      module: permission.module,
+    },
+  });
+
+  return permission;
+};
+
+const deletePermission = async (actorId: string, permissionId: string) => {
+  const existing = await PermissionRepository.getPermissionById(permissionId);
+  if (!existing) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Permission not found.');
+  }
+
+  const deleted = await PermissionRepository.deletePermission(permissionId);
+
+  await AuditLogRepository.createLog({
+    actorId,
+    action: 'Permission Deleted',
+    targetType: 'Permission',
+    targetId: deleted.id,
+    meta: {
+      atom: deleted.atom,
+      module: deleted.module,
+    },
+  });
+
+  return deleted;
+};
+
 export const PermissionService = {
   getAllPermissions,
   getMyPermissions,
   getUserPermissions,
   grantPermission,
   revokePermission,
+  createPermission,
+  deletePermission,
 };

@@ -82,10 +82,40 @@ const revokePermission = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// POST /api/v1/permissions
+const createPermission = asyncHandler(async (req: Request, res: Response) => {
+  const { userId: actorId } = req.user!;
+  const permission = await PermissionService.createPermission(actorId, req.body);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.CREATED,
+    message: 'Permission created successfully.',
+    data: permission,
+  });
+});
+
+// DELETE /api/v1/permissions/:permissionId
+const deletePermission = asyncHandler(async (req: Request, res: Response) => {
+  const { userId: actorId } = req.user!;
+  const { permissionId } = req.params;
+
+  const permission = await PermissionService.deletePermission(actorId, permissionId as string);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Permission deleted successfully.',
+    data: permission,
+  });
+});
+
 export const PermissionController = {
   getAllPermissions,
   getMyPermissions,
   getUserPermissions,
   grantPermission,
   revokePermission,
+  createPermission,
+  deletePermission,
 };

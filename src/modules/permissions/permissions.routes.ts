@@ -6,12 +6,18 @@ import { PermissionValidation } from './permissions.validation';
 
 const router = Router();
 
-router.get(
-  '/',
-  auth('view:permissions'),
-  validateRequest(PermissionValidation.getAllPermissions),
-  PermissionController.getAllPermissions
-);
+router
+  .route('/')
+  .get(
+    auth('view:permissions'),
+    validateRequest(PermissionValidation.getAllPermissions),
+    PermissionController.getAllPermissions
+  )
+  .post(
+    auth('manage:permissions'),
+    validateRequest(PermissionValidation.createPermission),
+    PermissionController.createPermission
+  );
 
 router.get(
   '/me',
@@ -39,6 +45,13 @@ router.post(
   auth('manage:permissions'),
   validateRequest(PermissionValidation.revokePermission),
   PermissionController.revokePermission
+);
+
+router.delete(
+  '/:permissionId',
+  auth('manage:permissions'),
+  validateRequest(PermissionValidation.deletePermission),
+  PermissionController.deletePermission
 );
 
 export const PermissionRoutes = router;
