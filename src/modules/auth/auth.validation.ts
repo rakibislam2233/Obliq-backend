@@ -37,8 +37,40 @@ const logout = z.object({
   cookies: z.object({}).optional(),
 });
 
+const forgotPassword = z.object({
+  body: z.object({
+    email: z.string().email('Invalid email address'),
+  }),
+  params: z.object({}).optional(),
+  query: z.object({}).optional(),
+  cookies: z.object({}).optional(),
+});
+
+const resetPassword = z.object({
+  body: z.object({
+    token: z.string().min(1, 'Reset token is required'),
+    newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+  }),
+  params: z.object({}).optional(),
+  query: z.object({}).optional(),
+  cookies: z.object({}).optional(),
+});
+
+const changePassword = z.object({
+  body: z.object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+  }),
+  params: z.object({}).optional(),
+  query: z.object({}).optional(),
+  cookies: z.object({}).optional(),
+});
+
 export const AuthValidation = {
   login,
   refresh,
   logout,
+  forgotPassword,
+  resetPassword,
+  changePassword,
 };

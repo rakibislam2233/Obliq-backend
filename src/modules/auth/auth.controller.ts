@@ -4,7 +4,12 @@ import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import ApiError from '../../utils/ApiError';
 import sendResponse from '../../utils/sendResponse';
-import { ILoginPayload } from './auth.interface';
+import {
+  IChangePasswordPayload,
+  IForgotPasswordPayload,
+  ILoginPayload,
+  IResetPasswordPayload,
+} from './auth.interface';
 import { AuthService } from './auth.service';
 
 const REFRESH_COOKIE_NAME = 'refreshToken';
@@ -45,11 +50,53 @@ const refresh = asyncHandler(async (req: Request, res: Response) => {
   // console.log('Refresh Token', refreshToken);
   const result = await AuthService.refresh(refreshToken);
 
+  res.cookie(REFRESH_COOKIE_NAME, result.refreshToken, getCookieOptions());
+
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,
     message: 'Access token refreshed successfully.',
     data: result,
+  });
+});
+
+// POST /api/v1/auth/forgot-password
+const forgotPassword = asyncHandler(async (req: Request, res: Response) => {
+  const payload = req.body as IForgotPasswordPayload;
+  await AuthService.forgotPassword(payload.email);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'If the email exists, a password reset link has been sent.',
+  });
+});
+
+// POST /api/v1/auth/reset-password
+const resetPassword = asyncHandler(async (req: Request, res: Response) => {
+  const payload = req.body as IResetPasswordPayload;
+  await AuthService.resetPassword(payload.token, payload.newPassword);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Password has been reset successfully.',
+  });
+});
+
+// POST /api/v1/auth/change-password
+const changePassword = asyncHandler(async (req: Request, res: Response) => {
+  if (!req.user?.userId) {
+    throw new ApiError(StatusCodes.UNAUTHORIZED, 'Unauthorized user context.');
+  }
+
+  const payload = req.body as IChangePasswordPayload;
+  await AuthService.changePassword(req.user.userId, payload.currentPassword, payload.newPassword);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Password changed successfully.',
   });
 });
 
@@ -91,4 +138,7 @@ export const AuthController = {
   login,
   refresh,
   logout,
+  forgotPassword,
+  resetPassword,
+  changePassword,
 };

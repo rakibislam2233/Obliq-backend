@@ -167,6 +167,18 @@ const updateUserStatus = async (id: string, status: UserStatus) => {
   });
 };
 
+const updateUserPasswordById = async (id: string, hashedPassword: string) => {
+  return database.user.update({
+    where: { id },
+    data: { password: hashedPassword },
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+    },
+  });
+};
+
 // ── Delete User (Hard Delete) ──────────────────
 const deleteUserById = async (id: string) => {
   return database.user.delete({
@@ -213,6 +225,7 @@ export const UserRepository = {
   getAllUsers,
   updateUserById,
   updateUserStatus,
+  updateUserPasswordById,
   deleteUserById,
   isEmailExists,
   isUserExists,
