@@ -6,6 +6,9 @@ import { AuditRoutes } from '../../modules/auditLogs/auditLogs.routes';
 import { PermissionRoutes } from '../../modules/permissions/permissions.routes';
 import { LeadRoutes } from '../../modules/leads/leads.routes';
 import { TaskRoutes } from '../../modules/tasks/tasks.routes';
+import { CustomerRoutes } from '../../modules/customers/customers.routes';
+import { ReportRoutes } from '../../modules/reports/reports.routes';
+import { SettingRoutes } from '../../modules/settings/settings.routes';
 const router = Router();
 
 // Module routes
@@ -37,6 +40,18 @@ const moduleRoutes = [
   {
     path: '/tasks',
     route: TaskRoutes,
+  },
+  {
+    path: '/customers',
+    route: CustomerRoutes,
+  },
+  {
+    path: '/reports',
+    route: ReportRoutes,
+  },
+  {
+    path: '/settings',
+    route: SettingRoutes,
   },
 ];
 
