@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { AuthRoutes } from '../../modules/auth/auth.routes';
 import { UserRoutes } from '../../modules/users/users.routes';
 import { AuditRoutes } from '../../modules/auditLogs/auditLogs.routes';
+import { PermissionRoutes } from '../../modules/permissions/permissions.routes';
 const router = Router();
 
 // Module routes
@@ -17,6 +18,10 @@ const moduleRoutes = [
   {
     path: '/audit-logs',
     route: AuditRoutes,
+  },
+  {
+    path: '/permissions',
+    route: PermissionRoutes,
   },
 ];
 
