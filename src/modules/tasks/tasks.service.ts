@@ -1,11 +1,13 @@
 import { TaskStatus } from '../../../prisma/generated/enums';
 import { StatusCodes } from 'http-status-codes';
 import ApiError from '../../utils/ApiError';
+import { PaginationOptions } from '../../utils/pagination.utils';
 import { AuditLogRepository } from '../auditLogs/auditLogs.repository';
+import { ITaskFilters } from './tasks.interface';
 import { TaskRepository } from './tasks.repository';
 
-const getAllTasks = async () => {
-  return TaskRepository.getAllTasks();
+const getAllTasks = async (filters: ITaskFilters, options: PaginationOptions) => {
+  return TaskRepository.getAllTasks(filters, options);
 };
 
 const getTaskById = async (id: string) => {

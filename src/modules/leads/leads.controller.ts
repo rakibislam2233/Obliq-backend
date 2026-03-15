@@ -1,11 +1,21 @@
 import { Request, Response } from 'express';
 import asyncHandler from 'express-async-handler';
 import { StatusCodes } from 'http-status-codes';
+import pick from '../../utils/pick.utils';
 import sendResponse from '../../utils/sendResponse';
 import { LeadService } from './leads.service';
 
-const getAllLeads = asyncHandler(async (_req: Request, res: Response) => {
-  const result = await LeadService.getAllLeads();
+const getAllLeads = asyncHandler(async (req: Request, res: Response) => {
+  const filters = pick(req.query, [
+    'fullName',
+    'email',
+    'source',
+    'status',
+    'assignedToId',
+    'search',
+  ]);
+  const options = pick(req.query, ['page', 'limit', 'sortBy', 'sortOrder']);
+  const result = await LeadService.getAllLeads(filters, options);
   sendResponse(res, {
     success: true,
     statusCode: StatusCodes.OK,

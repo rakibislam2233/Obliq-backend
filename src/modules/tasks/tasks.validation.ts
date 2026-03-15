@@ -8,7 +8,17 @@ const idParamSchema = z.object({
 const getAllTasks = z.object({
   body: z.object({}).optional(),
   params: z.object({}).optional(),
-  query: z.object({}).optional(),
+  query: z.object({
+    title: z.string().optional(),
+    status: z.enum(Object.values(TaskStatus) as [string, ...string[]]).optional(),
+    leadId: z.string().optional(),
+    assignedToId: z.string().optional(),
+    search: z.string().optional(),
+    page: z.coerce.number().int().min(1).optional(),
+    limit: z.coerce.number().int().min(1).max(100).optional(),
+    sortBy: z.string().optional(),
+    sortOrder: z.enum(['asc', 'desc']).optional(),
+  }),
   cookies: z.object({}).optional(),
 });
 

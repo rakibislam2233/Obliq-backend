@@ -1,11 +1,13 @@
 import { LeadStatus } from '../../../prisma/generated/enums';
 import { StatusCodes } from 'http-status-codes';
 import ApiError from '../../utils/ApiError';
+import { PaginationOptions } from '../../utils/pagination.utils';
 import { AuditLogRepository } from '../auditLogs/auditLogs.repository';
+import { ILeadFilters } from './leads.interface';
 import { LeadRepository } from './leads.repository';
 
-const getAllLeads = async () => {
-  return LeadRepository.getAllLeads();
+const getAllLeads = async (filters: ILeadFilters, options: PaginationOptions) => {
+  return LeadRepository.getAllLeads(filters, options);
 };
 
 const getLeadById = async (id: string) => {
